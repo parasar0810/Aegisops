@@ -126,3 +126,51 @@ infra/aws/          AWS deployment (pending account details)
 ```
 
 The legacy multi-domain SOC/RAG endpoints (`/api/investigate`, `/api/incidents/investigate`, `/api/adk/investigate`, `/api/ingest/*`) are kept and still tested; they now run as plain sequential pipelines (LangGraph was removed).
+
+---
+
+## Demo Screenshots
+
+### AegisOps Console — Investigation & Human Approval
+
+![AegisOps Investigation — MCP Evidence](docs/screenshots/aegisops-investigation-mcp-evidence.jpg)
+*MCP tool `query_observability` collecting evidence (logs, metrics) in real-time during an active investigation.*
+
+![AegisOps Human Approval Gate](docs/screenshots/aegisops-human-approval-gate.jpg)
+*Human-in-the-loop approval UI: operator must explicitly approve or reject before any remediation executes.*
+
+![AegisOps Remediation JSON Response](docs/screenshots/aegisops-remediation-json-response.jpg)
+*Structured JSON remediation plan with root-cause hypothesis, supporting evidence, and risk level.*
+
+![AegisOps Console — ShopFront DB Incident](docs/screenshots/aegisops-console-shopfront-db-incident.png)
+*Full incident console showing a detected ShopFront database failure with ADK pipeline timeline.*
+
+---
+
+### A2A Agent Communication
+
+![A2A Agent Communication Diagram](docs/screenshots/a2a-agent-communication-diagram.png)
+*Agent-to-Agent (A2A SDK) JSON-RPC flow: ADK Orchestrator delegates to CrewAI specialist agents (SRE, Backend, Cloud/DevOps, Security, Database) via Agent Cards and DataPart messages.*
+
+---
+
+### Observability — Grafana + Prometheus
+
+![Grafana Prometheus Explore](docs/screenshots/grafana-prometheus-explore.png)
+*Grafana connected to Prometheus datasource showing live AegisOps metrics.*
+
+![Grafana Prometheus Query Builder](docs/screenshots/grafana-prometheus-query-builder.png)
+*Grafana query builder for exploring `aegis_agent_duration_seconds`, `incident_mcp_tool_calls_total` and other platform metrics.*
+
+---
+
+### AWS Deployment
+
+![AWS SSM Session Terminal](docs/screenshots/aws-ssm-session-terminal.png)
+*AWS Systems Manager (SSM) session into the EC2 t4g.small instance — no SSH required. Secrets fetched from SSM Parameter Store.*
+
+![ShopFront Home — AWS](docs/screenshots/shopfront-home-aws.png)
+*ShopFront e-commerce store live on AWS (`https://shop.13-127-211-52.sslip.io/`) — the real application monitored by AegisOps.*
+
+![ShopFront Product — AWS](docs/screenshots/shopfront-product-aws.png)
+*ShopFront product detail page on AWS — monitored with 6 Prometheus alert rules and 6 allowlisted remediation hooks.*
