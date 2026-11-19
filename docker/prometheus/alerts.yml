@@ -1,0 +1,70 @@
+groups:
+  - name: demo-target
+    rules:
+      - alert: DemoTargetHighErrorRate
+        expr: shop_error_rate{job="demo-target"} > 0.05
+        for: 15s
+        labels: {severity: high, application: demo-target, service: demo-api}
+        annotations: {summary: "Demo target HTTP 5xx error rate above 5%"}
+      - alert: DemoTargetDatabasePoolExhausted
+        expr: shop_db_pool_in_use_ratio{job="demo-target"} > 0.9
+        for: 10s
+        labels: {severity: critical, application: demo-target, service: demo-db}
+        annotations: {summary: "Demo target database connection pool exhausted"}
+      - alert: DemoTargetHighMemory
+        expr: shop_memory_percent{job="demo-target"} > 85
+        for: 10s
+        labels: {severity: high, application: demo-target}
+        annotations: {summary: "Demo target memory above 85%"}
+      - alert: DemoTargetHighCPU
+        expr: shop_cpu_percent{job="demo-target"} > 85
+        for: 20s
+        labels: {severity: high, application: demo-target}
+        annotations: {summary: "Demo target CPU above 85%"}
+      - alert: DemoTargetHighLatency
+        expr: shop_p95_latency_seconds{job="demo-target"} > 2
+        for: 15s
+        labels: {severity: medium, application: demo-target}
+        annotations: {summary: "Demo target p95 latency above 2s"}
+      - alert: DemoTargetTrafficSpike
+        expr: shop_request_rate{job="demo-target"} > 60
+        for: 10s
+        labels: {severity: medium, application: demo-target}
+        annotations: {summary: "Demo target abnormal request rate"}
+      - alert: DemoTargetDown
+        expr: up{job="demo-target"} == 0
+        for: 15s
+        labels: {severity: critical, application: demo-target}
+        annotations: {summary: "Demo target target down"}
+  - name: shopfront
+    rules:
+      - alert: ShopFrontHigh5xxRate
+        expr: sum(rate(shopfront_http_requests_total{status=~"5.."}[30s])) / clamp_min(sum(rate(shopfront_http_requests_total[30s])), 0.001) > 0.05
+        for: 30s
+        labels: {severity: high, application: shopfront, service: shopfront-api}
+        annotations: {summary: "ShopFront HTTP 5xx error rate above 5%"}
+      - alert: ShopFrontDown
+        expr: up{job="shopfront"} == 0
+        for: 30s
+        labels: {severity: critical, application: shopfront, service: shopfront-api}
+        annotations: {summary: "ShopFront API is down"}
+      - alert: ShopFrontHighLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(shopfront_http_request_duration_seconds_bucket[30s]))) > 1.5
+        for: 30s
+        labels: {severity: medium, application: shopfront, service: shopfront-api}
+        annotations: {summary: "ShopFront p95 latency above 1.5s"}
+      - alert: ShopFrontDatabaseDown
+        expr: shopfront_db_up == 0
+        for: 15s
+        labels: {severity: critical, application: shopfront, service: shopfront-db}
+        annotations: {summary: "ShopFront cannot reach its database"}
+      - alert: ShopFrontHighCPU
+        expr: shopfront_cpu_percent > 85
+        for: 30s
+        labels: {severity: high, application: shopfront, service: shopfront-api}
+        annotations: {summary: "ShopFront CPU above 85% of its limit"}
+      - alert: ShopFrontHighMemory
+        expr: shopfront_memory_percent > 85
+        for: 15s
+        labels: {severity: high, application: shopfront, service: shopfront-api}
+        annotations: {summary: "ShopFront memory above 85% of its limit"}

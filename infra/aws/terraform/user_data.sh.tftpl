@@ -1,0 +1,32 @@
+#!/bin/bash
+# First-boot bootstrap for AegisOps on Amazon Linux 2023. Log: /var/log/aegisops-bootstrap.log
+set -euxo pipefail
+exec > >(tee -a /var/log/aegisops-bootstrap.log) 2>&1
+
+# 2 GiB swap: headroom for the image build and investigation spikes on a 2 GiB instance.
+if [ ! -f /swapfile ]; then
+  dd if=/dev/zero of=/swapfile bs=1M count=2048
+  chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+  echo '/swapfile none swap defaults 0 0' >> /etc/fstab
+fi
+
+dnf install -y docker unzip
+systemctl enable --now docker
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -fsSL "https://github.com/docker/compose/releases/download/v2.32.4/docker-compose-linux-${compose}" \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+# Keep container logs bounded.
+echo '{"log-driver":"json-file","log-opts":{"max-size":"10m","max-file":"3"}}' > /etc/docker/daemon.json
+systemctl restart docker
+
+mkdir -p /opt/aegisops && cd /opt/aegisops
+aws s3 cp "s3://${bucket}/${object_key}" bundle.zip --region ${region}
+rm -rf app && unzip -q bundle.zip && mv aegisops app && rm bundle.zip
+cd app
+
+# Secrets from SSM Parameter Store -> .env (root-only). Never baked into the image or user data.
+bash infra/aws/render_env.sh ${region} ${prefix}
+
+docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d --build
+echo "AegisOps bootstrap complete"

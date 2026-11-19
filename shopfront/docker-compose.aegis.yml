@@ -1,0 +1,14 @@
+# Attach ShopFront to an AegisOps installation on the same host:
+#   docker compose -f docker-compose.yml -f docker-compose.aegis.yml up -d --build
+# Joins the "aegis-net" network so AegisOps (MCP tools, hooks), Prometheus and the edge
+# nginx can reach it by name. No ShopFront port is published on the host.
+services:
+  shopfront-api:
+    networks: [default, aegis-net]
+  shopfront-web:
+    ports: !reset []
+    networks: [default, aegis-net]
+
+networks:
+  aegis-net:
+    external: true

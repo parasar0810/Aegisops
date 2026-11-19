@@ -1,0 +1,94 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# uv
+uv.lock
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Unit test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+*.xml
+nosetests.xml
+coverage.xml
+
+# Linter caches
+.ruff_cache/
+.mypy_cache/
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+shopfront/web/dist/
+shopfront/web/.vite/
+
+# ── Environment / Secrets ────────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+
+# ── Docker / runtime ────────────────────────────────────────────────────────
+*.tar
+*.tar.gz
+
+# ── Terraform state (contains secrets) ──────────────────────────────────────
+infra/aws/terraform/.terraform/
+infra/aws/terraform/terraform.tfstate
+infra/aws/terraform/terraform.tfstate.backup
+infra/aws/terraform/terraform.tfvars
+infra/aws/terraform/tfplan
+infra/aws/terraform/.terraform.lock.hcl
+
+# ── Runtime data / generated ─────────────────────────────────────────────────
+data/sre_state/
+data/demo_state_*/
+*.db
+*.sqlite3
+scratch_verification_output.json
+
+# ── macOS ────────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Windows ──────────────────────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── IDE ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.tmp_appdata/
+.tmp_localappdata/
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Package locks (keep pyproject.toml, ignore lock) ─────────────────────────
+# uv.lock excluded above
+shopfront/web/package-lock.json

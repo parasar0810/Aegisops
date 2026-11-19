@@ -1,0 +1,287 @@
+{
+  "generated_at": "2026-11-11T22:12:10Z",
+  "results": [
+    {
+      "scenario": "db",
+      "expected": "database_failure",
+      "detected": true,
+      "incident_id": "inc-b567ff3a2d",
+      "source": "aegis_monitor",
+      "detection_s": 7.17,
+      "investigation_agent_s": 0.74,
+      "predicted": "database_failure",
+      "confidence": 0.74,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 1.96,
+        "context_discovery_agent": 271.28,
+        "triage_agent": 1.2,
+        "evidence_collection_agent": 304.23,
+        "specialist_delegation_agent": 128.76,
+        "evidence_synthesis_agent": 16.15,
+        "remediation_planning_agent": 16.44
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "reset_db_pool",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 18.12,
+      "approval_to_verified_s": 8.88
+    },
+    {
+      "scenario": "memory",
+      "expected": "memory_exhaustion",
+      "detected": true,
+      "incident_id": "inc-64cff1eaba",
+      "source": "aegis_monitor",
+      "detection_s": 7.25,
+      "investigation_agent_s": 1.73,
+      "predicted": "memory_exhaustion",
+      "confidence": 0.6,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 2.98,
+        "context_discovery_agent": 296.1,
+        "triage_agent": 1.77,
+        "evidence_collection_agent": 1252.28,
+        "specialist_delegation_agent": 126.15,
+        "evidence_synthesis_agent": 26.15,
+        "remediation_planning_agent": 21.83
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "clear_cache",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 18.26,
+      "approval_to_verified_s": 8.94
+    },
+    {
+      "scenario": "cpu",
+      "expected": "cpu_saturation",
+      "detected": true,
+      "incident_id": "inc-01da56e39d",
+      "source": "aegis_monitor",
+      "detection_s": 13.34,
+      "investigation_agent_s": 2.77,
+      "predicted": "cpu_saturation",
+      "confidence": 0.61,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 2.27,
+        "context_discovery_agent": 422.53,
+        "triage_agent": 0.96,
+        "evidence_collection_agent": 2237.95,
+        "specialist_delegation_agent": 65.82,
+        "evidence_synthesis_agent": 20.36,
+        "remediation_planning_agent": 17.02
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "restart",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 24.47,
+      "approval_to_verified_s": 9.07
+    },
+    {
+      "scenario": "errors",
+      "expected": "http_errors",
+      "detected": true,
+      "incident_id": "inc-20f97b3f63",
+      "source": "aegis_monitor",
+      "detection_s": 7.23,
+      "investigation_agent_s": 0.92,
+      "predicted": "http_errors",
+      "confidence": 0.68,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 3.06,
+        "context_discovery_agent": 312.72,
+        "triage_agent": 3.27,
+        "evidence_collection_agent": 346.25,
+        "specialist_delegation_agent": 210.6,
+        "evidence_synthesis_agent": 22.34,
+        "remediation_planning_agent": 22.34
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "restart",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 18.26,
+      "approval_to_verified_s": 9.0
+    },
+    {
+      "scenario": "slow",
+      "expected": "high_latency",
+      "detected": true,
+      "incident_id": "inc-19c2c9583d",
+      "source": "aegis_monitor",
+      "detection_s": 16.41,
+      "investigation_agent_s": 4.65,
+      "predicted": "high_latency",
+      "confidence": 0.55,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 1.61,
+        "context_discovery_agent": 283.33,
+        "triage_agent": 1.28,
+        "evidence_collection_agent": 4191.12,
+        "specialist_delegation_agent": 125.58,
+        "evidence_synthesis_agent": 21.91,
+        "remediation_planning_agent": 22.27
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "restart",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 32.54,
+      "approval_to_verified_s": 8.91
+    },
+    {
+      "scenario": "down",
+      "expected": "service_unavailable",
+      "detected": true,
+      "incident_id": "inc-5f8d0d665a",
+      "source": "aegis_monitor",
+      "detection_s": 7.2,
+      "investigation_agent_s": 0.78,
+      "predicted": "service_unavailable",
+      "confidence": 0.56,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 2.05,
+        "context_discovery_agent": 297.58,
+        "triage_agent": 1.91,
+        "evidence_collection_agent": 323.92,
+        "specialist_delegation_agent": 111.65,
+        "evidence_synthesis_agent": 23.78,
+        "remediation_planning_agent": 22.89
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "restart",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 18.16,
+      "approval_to_verified_s": 8.88
+    },
+    {
+      "scenario": "bad_deploy",
+      "expected": "bad_deployment",
+      "detected": true,
+      "incident_id": "inc-7f319d3245",
+      "source": "aegis_monitor",
+      "detection_s": 7.2,
+      "investigation_agent_s": 0.69,
+      "predicted": "bad_deployment",
+      "confidence": 0.61,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 1.24,
+        "context_discovery_agent": 271.86,
+        "triage_agent": 1.38,
+        "evidence_collection_agent": 297.63,
+        "specialist_delegation_agent": 78.25,
+        "evidence_synthesis_agent": 20.25,
+        "remediation_planning_agent": 21.38
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "rollback",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 18.11,
+      "approval_to_verified_s": 8.86
+    },
+    {
+      "scenario": "traffic",
+      "expected": "abnormal_traffic",
+      "detected": true,
+      "incident_id": "inc-fecfee17c0",
+      "source": "aegis_monitor",
+      "detection_s": 7.22,
+      "investigation_agent_s": 0.69,
+      "predicted": "abnormal_traffic",
+      "confidence": 0.59,
+      "insufficient": false,
+      "phase": "awaiting_approval",
+      "agent_ms": {
+        "incident_detection_agent": 1.2,
+        "context_discovery_agent": 276.99,
+        "triage_agent": 1.69,
+        "evidence_collection_agent": 286.76,
+        "specialist_delegation_agent": 74.09,
+        "evidence_synthesis_agent": 23.42,
+        "remediation_planning_agent": 21.59
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true,
+      "remediation": "enable_rate_limit",
+      "approved": true,
+      "final_phase": "resolved",
+      "recovered": true,
+      "recovery_s": 18.16,
+      "approval_to_verified_s": 8.9
+    },
+    {
+      "scenario": "none",
+      "expected": null,
+      "detected": true,
+      "incident_id": "inc-aa4e4519ef",
+      "source": "app_alert",
+      "detection_s": 19.23,
+      "investigation_agent_s": 0.86,
+      "predicted": "unknown",
+      "confidence": 0.1,
+      "insufficient": true,
+      "phase": "closed_no_action",
+      "agent_ms": {
+        "incident_detection_agent": 3.32,
+        "context_discovery_agent": 289.58,
+        "triage_agent": 2.73,
+        "evidence_collection_agent": 344.42,
+        "specialist_delegation_agent": 160.18,
+        "evidence_synthesis_agent": 28.64,
+        "remediation_planning_agent": 26.36
+      },
+      "a2a_modes": [
+        "deterministic"
+      ],
+      "correct": true
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+# ShopFront: independently deployable demo store (React + FastAPI + PostgreSQL).
+#   cp .env.example .env   # set the secrets
+#   docker compose up -d --build            -> http://localhost:8080
+# Attach to an AegisOps installation on the same host with docker-compose.aegis.yml.
+name: shopfront
+services:
+  shopfront-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: shopfront
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: ${SHOPFRONT_DB_PASSWORD:?set SHOPFRONT_DB_PASSWORD in .env}
+    command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=40"]
+    volumes: [shopfront-pgdata:/var/lib/postgresql/data]
+    mem_limit: 192m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop -d shopfront"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  shopfront-api:
+    build:
+      context: ./api
+      args:
+        BUILD_TIME: ${SHOPFRONT_BUILD_TIME:-0}
+    image: shopfront-api:local
+    environment:
+      DATABASE_URL: postgresql+psycopg://shop:${SHOPFRONT_DB_PASSWORD}@shopfront-db:5432/shopfront
+      APP_VERSION: "2.4.0"
+      FAULT_INJECTION_ENABLED: ${SHOPFRONT_FAULTS_ENABLED:-false}   # demo only; off by default
+      FAULT_TOKEN: ${SHOPFRONT_FAULT_TOKEN:?set SHOPFRONT_FAULT_TOKEN in .env}
+      OPS_TOKEN: ${AEGIS_HOOK_TOKEN_SHOPFRONT:?set AEGIS_HOOK_TOKEN_SHOPFRONT in .env}
+    depends_on:
+      shopfront-db: {condition: service_healthy}
+    cpus: 0.5          # bounds the CPU fault
+    mem_limit: 384m    # bounds the memory fault
+    restart: unless-stopped
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+
+  shopfront-web:
+    build: ./web
+    image: shopfront-web:local
+    ports: ["8080:80"]
+    depends_on: [shopfront-api]
+    mem_limit: 64m
+    restart: unless-stopped
+
+  # Gentle synthetic shoppers (~1.5 req/s) so error-rate and latency metrics have data.
+  shopfront-traffic:
+    image: shopfront-api:local
+    command: ["python", "-m", "shopfront.traffic"]
+    environment:
+      SHOPFRONT_URL: http://shopfront-web
+    depends_on: [shopfront-web]
+    mem_limit: 96m
+    restart: unless-stopped
+
+volumes:
+  shopfront-pgdata:

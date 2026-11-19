@@ -1,0 +1,28 @@
+# Routes Prometheus alerts to the AegisOps webhook. Each registered application has its own
+# ingest key, read from the shared am-key volume (written when the app is registered).
+route:
+  receiver: aegisops-demo-target
+  group_by: [alertname, application]
+  group_wait: 5s
+  group_interval: 30s
+  repeat_interval: 30m
+  routes:
+    - matchers: ['application="shopfront"']
+      receiver: aegisops-shopfront
+receivers:
+  - name: aegisops-demo-target
+    webhook_configs:
+      - url: http://aegisops:8000/api/v1/incidents/webhook
+        send_resolved: false
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /etc/aegis-secrets/aegis_ingest_key
+  - name: aegisops-shopfront
+    webhook_configs:
+      - url: http://aegisops:8000/api/v1/incidents/webhook
+        send_resolved: false
+        http_config:
+          authorization:
+            type: Bearer
+            credentials_file: /etc/aegis-secrets/shopfront_ingest_key

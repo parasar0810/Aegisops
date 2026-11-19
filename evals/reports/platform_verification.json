@@ -1,0 +1,32 @@
+{
+  "created_at": "2026-11-11T22:10:39.536230+00:00",
+  "passed": true,
+  "checks": {
+    "mcp_tools_available": true,
+    "a2a_agents_available": true,
+    "advertised_capabilities": true,
+    "security_mcp_timeline": true,
+    "security_a2a_exchange": true,
+    "security_a2a_peer_message": true,
+    "generic_mcp_timeline": true,
+    "generic_a2a_exchange": true,
+    "generic_a2a_peer_message": true,
+    "security_evidence_complete": true,
+    "generic_evidence_complete": true,
+    "actions_generated": true
+  },
+  "metrics": {
+    "mcp_tools_available": 6,
+    "integration_ready_tools": 5,
+    "local_tool_calls_supported": 6,
+    "a2a_agents_available": 5,
+    "advertised_capabilities": 15,
+    "operational_workflows": 5,
+    "a2a_messages_per_investigation": 3,
+    "a2a_provider": "local",
+    "cloud_ready_a2a_agents": 0,
+    "automated_response_steps": 9,
+    "sample_security_risk_score": 100,
+    "sample_incident_risk_score": 100
+  }
+}

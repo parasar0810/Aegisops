@@ -1,0 +1,74 @@
+# Production override for the single-EC2 deployment:
+#   docker compose -f docker-compose.yml -f docker-compose.aws.yml up -d --build
+# Secrets come from .env (rendered from SSM by infra/aws/render_env.sh). Only nginx listens
+# publicly (80 -> HTTPS redirect, 443 TLS); everything else binds to localhost and is reached
+# through nginx or SSM port forwarding.
+services:
+  aegisops:
+    ports: !override ["127.0.0.1:8000:8000"]
+    environment:
+      AUTH_REQUIRED: "true"
+      APP_ENV: production
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in .env}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?set in .env}
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:?set in .env}
+    entrypoint: ["/bin/sh", "/etc/nginx/aegis/start.sh"]
+    volumes:
+      - ./docker/nginx:/etc/nginx/aegis:ro
+      - letsencrypt:/etc/letsencrypt:ro
+      - acme-webroot:/var/www/certbot:ro
+    depends_on: [aegisops]
+    restart: unless-stopped
+
+  # Obtains and renews the free Let's Encrypt certificate (HTTP-01 via nginx's port 80).
+  certbot:
+    image: certbot/certbot:v2.11.0
+    environment:
+      DOMAIN: ${DOMAIN:?set in .env}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        trap exit TERM;
+        until certbot certonly --webroot -w /var/www/certbot -d "$$DOMAIN" -d "shop.$$DOMAIN" --expand --agree-tos -n
+        --register-unsafely-without-email --keep-until-expiring; do sleep 300; done;
+        while :; do sleep 12h & wait $$!; certbot renew -q; done
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - acme-webroot:/var/www/certbot
+    depends_on: [nginx]
+    restart: unless-stopped
+
+  selfcheck:
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in .env}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?set in .env}
+
+  shopfront-check:
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?set in .env}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?set in .env}
+      SHOPFRONT_FAULT_TOKEN: ${SHOPFRONT_FAULT_TOKEN:?set in .env}
+
+  demo-app:
+    ports: !override ["127.0.0.1:9000:9000"]
+
+  prometheus:
+    ports: !override ["127.0.0.1:9090:9090"]
+
+  alertmanager:
+    ports: !override ["127.0.0.1:9093:9093"]
+
+  grafana:
+    ports: !override ["127.0.0.1:3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+
+volumes:
+  letsencrypt:
+  acme-webroot:

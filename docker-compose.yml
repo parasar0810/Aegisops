@@ -1,0 +1,123 @@
+# AegisOps local environment: AegisOps + synthetic demo-target + Prometheus + Alertmanager + Grafana.
+#   docker compose up -d --build
+#   docker compose run --rm selfcheck      # runs all 9 fault scenarios end to end; exit 0 = fully working
+services:
+  aegisops:
+    image: aegisops:local
+    build: .
+    ports: ["8000:8000"]
+    env_file: [.env.example]
+    environment:
+      AEGIS_PUBLIC_URL: http://aegisops:8000
+      AEGIS_A2A_MODE: inprocess
+      AEGIS_MONITOR_INTERVAL_SECONDS: "0"   # detection comes from Prometheus/Alertmanager here
+      AEGIS_VERIFY_SETTLE_SECONDS: "10"     # two Prometheus scrapes, so verification sees post-fix data
+      AEGIS_HOOK_TOKEN_DEMO_TARGET: ${DEMO_ADMIN_TOKEN:-demo-admin-token}
+      AEGIS_HOOK_TOKEN_SHOPFRONT: ${AEGIS_HOOK_TOKEN_SHOPFRONT:-shopfront-ops-token}
+      AEGIS_LLM_MODE: ${AEGIS_LLM_MODE:-auto}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      # No Redis in this stack: a set REDIS_URL makes CrewAI's lock store connect to it and every LLM call fail.
+      REDIS_URL: ${REDIS_URL:-}
+    volumes:
+      - aegis-data:/app/data
+      - am-key:/app/secrets
+    restart: unless-stopped
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+
+  demo-app:
+    image: aegisops-demo-app:local
+    build: ./demo_app
+    ports: ["9000:9000"]
+    environment:
+      DEMO_ADMIN_TOKEN: ${DEMO_ADMIN_TOKEN:-demo-admin-token}
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports: ["9090:9090"]
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    depends_on: [aegisops, demo-app]
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    ports: ["9093:9093"]
+    volumes:
+      - ./docker/alertmanager:/etc/alertmanager:ro
+      - am-key:/etc/aegis-secrets:ro
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml"]
+    depends_on: [aegisops]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on: [prometheus]
+    restart: unless-stopped
+
+  # One-shot end-to-end verification: fault -> Prometheus -> Alertmanager -> AegisOps -> approve -> verify.
+  selfcheck:
+    image: aegisops:local
+    profiles: ["check"]
+    env_file: [.env.example]
+    command: ["python", "scripts/run_demo.py", "--docker", "--api", "http://aegisops:8000",
+              "--scenario", "all", "--auto-approve"]
+    volumes:
+      - am-key:/app/secrets
+    depends_on:
+      aegisops: {condition: service_healthy}
+      demo-app: {condition: service_healthy}
+      prometheus: {condition: service_started}
+      alertmanager: {condition: service_started}
+
+  # ShopFront end-to-end demo: injects each fault into ShopFront (shopfront/), waits for the
+  # Prometheus -> Alertmanager -> AegisOps incident, approves the top fix, verifies recovery.
+  shopfront-check:
+    image: aegisops:local
+    profiles: ["check"]
+    env_file: [.env.example]
+    environment:
+      SHOPFRONT_FAULT_TOKEN: ${SHOPFRONT_FAULT_TOKEN:-shopfront-fault-token}
+    command: ["python", "scripts/shopfront_demo.py", "--scenario", "all", "--auto-approve"]
+    volumes:
+      - am-key:/app/secrets
+      - aegis-data:/app/data   # keeps shopfront_report.json
+    depends_on:
+      aegisops: {condition: service_healthy}
+      prometheus: {condition: service_started}
+      alertmanager: {condition: service_started}
+
+  # Optional: PostgreSQL + Redis for the legacy SOC endpoints (USE_POSTGRES=true).
+  postgres:
+    image: pgvector/pgvector:pg16
+    profiles: ["storage"]
+    environment:
+      POSTGRES_USER: incident
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-incident}
+      POSTGRES_DB: incident_response
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./app/storage/postgres_pgvector.sql:/docker-entrypoint-initdb.d/001_pgvector.sql:ro
+  redis:
+    image: redis:7-alpine
+    profiles: ["storage"]
+
+networks:
+  default:
+    name: aegis-net   # ShopFront (shopfront/docker-compose.aegis.yml) joins this network
+
+volumes:
+  aegis-data:
+  am-key:   # per-app ingest key shared from AegisOps to Alertmanager
+  grafana-data:
+  pgdata:

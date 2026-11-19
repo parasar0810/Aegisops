@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AegisOps Console</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121821;--panel2:#18202b;--line:#243041;--text:#dbe4ee;--muted:#8a99ab;
+--accent:#4da3ff;--ok:#3ecf8e;--warn:#f5b84b;--bad:#ff5d6c;--crit:#ff2e63;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:16px;margin:0;letter-spacing:.3px}header .mode{margin-left:auto;color:var(--muted);font-size:12px}
+main{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 50px)}
+aside{border-right:1px solid var(--line);padding:16px;overflow:auto}section{padding:16px 20px;overflow:auto}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:18px 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
+.app{display:flex;justify-content:space-between;align-items:center}.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+.inc{cursor:pointer}.inc:hover,.inc.sel{border-color:var(--accent)}
+.appsel{cursor:pointer}.appsel:hover,.appsel.sel{border-color:var(--accent)}
+.platform{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,var(--panel)),var(--panel))}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 6px}.stats div{background:var(--panel2);border-radius:6px;padding:6px 8px;text-align:center}
+.stats b{display:block;font-size:18px}.stats span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.tabs{display:flex;gap:6px;margin-bottom:8px}.tab{background:transparent;color:var(--muted);border:1px solid var(--line);padding:4px 10px}.tab.on{background:var(--panel2);color:var(--text);border-color:var(--accent)}
+.appb{color:var(--accent)}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:600;border:1px solid currentColor}
+.sev-critical{color:var(--crit)}.sev-high{color:var(--bad)}.sev-medium{color:var(--warn)}.sev-low{color:var(--muted)}
+.ph-resolved{color:var(--ok)}.ph-awaiting_approval{color:var(--warn)}.ph-unresolved,.ph-failed{color:var(--bad)}.ph-investigating{color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500}.mono{font-family:var(--mono);font-size:12px}.muted{color:var(--muted)}
+.bar{height:6px;background:var(--panel2);border-radius:4px;overflow:hidden}.bar>i{display:block;height:100%;background:var(--accent)}
+button{background:var(--accent);color:#04111f;border:0;border-radius:6px;padding:6px 12px;font-weight:600;cursor:pointer}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}button.danger{background:var(--bad);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}input{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:7px 9px}
+.login{max-width:340px;margin:12vh auto}.login input{width:100%;margin:6px 0}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:12px}.tl div{margin:0 0 8px}.tl b{color:var(--accent);font-weight:500}
+.big{font-size:18px;font-weight:600}.empty{color:var(--muted);padding:30px;text-align:center}
+@media(max-width:860px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header><h1>AegisOps · Incident Operations</h1><span class="mode" id="mode"></span><button class="ghost" id="logout" hidden>Sign out</button></header>
+<div id="login" class="login card" hidden>
+  <div class="big">Sign in</div><p class="muted">Use an AegisOps operator account.</p>
+  <input id="u" placeholder="username" autocomplete="username"><input id="p" type="password" placeholder="password" autocomplete="current-password">
+  <button id="go" style="width:100%;margin-top:8px">Sign in</button><p id="err" class="sev-high"></p>
+</div>
+<main id="app" hidden>
+  <aside>
+    <h2>AegisOps platform</h2><div id="platform"></div>
+    <h2>Monitored applications</h2><div id="apps"></div>
+    <h2>Incidents</h2>
+    <div class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-f="active" aria-selected="true" class="tab on">Active</button><button role="tab" data-f="resolved" aria-selected="false" class="tab">Resolved</button><button role="tab" data-f="all" aria-selected="false" class="tab">All</button>
+    </div>
+    <div id="appfilter" class="muted"></div>
+    <div id="incs"></div>
+  </aside>
+  <section id="detail"><div class="empty">Select an incident to see the investigation.</div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let token=sessionStorage.getItem("aegis_token"), selected=null, filter="active", appFilter=null;
+const OPEN=["detected","investigating","awaiting_approval","remediating","verifying"];
+async function api(path,opt={}){const r=await fetch("/api"+path,{...opt,headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})}});
+  if(r.status===401){logout();throw new Error("unauthorized")} if(!r.ok) throw new Error((await r.json()).detail||r.statusText); return r.json()}
+function logout(){token=null;sessionStorage.removeItem("aegis_token");$("#app").hidden=true;$("#logout").hidden=true;$("#login").hidden=false}
+$("#logout").onclick=logout;
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{filter=b.dataset.f;document.querySelectorAll(".tab").forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-selected",x===b)});refresh()});
+$("#go").onclick=async()=>{try{const r=await fetch("/api/auth/token",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("#u").value,password:$("#p").value,role:"sre"})});
+  if(!r.ok) throw new Error("Invalid credentials"); token=(await r.json()).access_token; sessionStorage.setItem("aegis_token",token); start()}catch(e){$("#err").textContent=e.message}};
+const sev=s=>`<span class="pill sev-${esc(s)}">${esc(s)}</span>`, ph=s=>`<span class="pill ph-${esc(s)}">${esc(String(s).replace(/_/g," "))}</span>`;
+async function refresh(){
+  const [apps,incs,sys,ag]=await Promise.all([api("/v1/applications"),api("/v1/incidents"),api("/v1/system/health"),api("/v1/agents")]);
+  $("#mode").textContent=`reasoning: ${sys.llm_mode} · ${sys.active_investigations} running`;
+  const nOpen=incs.filter(i=>OPEN.includes(i.phase)).length, nRes=incs.filter(i=>i.phase==="resolved").length;
+  $("#platform").innerHTML=`<div class="card platform"><div class="app"><div><span class="dot" style="background:var(--ok)"></span><b>AegisOps</b>
+    <div class="muted">${ag.adk_agents.length} ADK agents · ${ag.a2a_specialists.length} CrewAI specialists (A2A)</div></div><span class="pill ph-resolved">${esc(sys.status)}</span></div>
+    <div class="stats"><div><b>${nOpen}</b><span>active</span></div><div><b>${nRes}</b><span>resolved</span></div><div><b>${apps.length}</b><span>apps</span></div></div>
+    <div class="muted">Reasoning: ${esc(sys.llm_mode==="llm"?"CrewAI + LLM":"deterministic (no LLM key)")}</div></div>`;
+  $("#apps").innerHTML=apps.map(a=>{const up=a.last_health?.up;const c=up===undefined?"var(--muted)":up?"var(--ok)":"var(--bad)";
+    const n=incs.filter(i=>i.application===a.name&&OPEN.includes(i.phase)).length;
+    return `<div class="card app appsel ${appFilter===a.name?"sel":""}" data-app="${esc(a.name)}" title="Show only ${esc(a.name)} incidents"><div><span class="dot" style="background:${c}"></span><b>${esc(a.name)}</b>
+      <div class="muted">${esc(a.environment)} · ${esc(a.tech_stack.slice(0,4).join(", "))}</div><div class="muted mono">${esc(a.app_id)}</div></div>
+      <div style="text-align:right">${n?`<span class="pill sev-high">${n} open</span>`:`<span class="muted">no open</span>`}<div class="muted mono">${esc(a.remediation_hooks.length)} hooks</div></div></div>`}).join("")||'<div class="muted">No applications registered.</div>';
+  $("#appfilter").innerHTML=appFilter?`Showing <b>${esc(appFilter)}</b> · <a href="#" id="clearapp">all apps</a>`:"";
+  const shown=incs.filter(i=>(filter==="all"||(filter==="active"?OPEN.includes(i.phase):!OPEN.includes(i.phase)))&&(!appFilter||i.application===appFilter));
+  $("#incs").innerHTML=shown.map(i=>`<div class="card inc ${i.incident_id===selected?"sel":""}" data-id="${esc(i.incident_id)}">
+    <div style="display:flex;justify-content:space-between;gap:6px">${sev(i.severity)}<span class="pill appb">${esc(i.application)}</span>${ph(i.phase)}</div>
+    <div style="margin-top:6px">${esc(i.title)}</div><div class="muted mono">${esc(i.incident_id)} · ${new Date(i.created_at).toLocaleTimeString()}</div>
+    ${i.root_cause?`<div class="muted">→ ${esc(i.root_cause)} (${Math.round(i.confidence*100)}%)</div>`:""}</div>`).join("")||`<div class="muted">No ${filter==="all"?"":filter} incidents.</div>`;
+  document.querySelectorAll(".inc").forEach(el=>el.onclick=()=>{selected=el.dataset.id;refresh()});
+  document.querySelectorAll(".appsel").forEach(el=>el.onclick=()=>{appFilter=appFilter===el.dataset.app?null:el.dataset.app;refresh()});
+  const ca=$("#clearapp"); if(ca) ca.onclick=e=>{e.preventDefault();appFilter=null;refresh()};
+  if(selected) show(await api("/v1/incidents/"+selected));
+}
+function show(i){
+  const r=i.rca, conf=r?Math.round(r.primary.confidence*100):0, evById=Object.fromEntries(i.evidence.map(e=>[e.evidence_id,e]));
+  const opts=i.remediation_options.map(o=>`<tr><td>#${o.rank}</td><td><b>${esc(o.hook_name||"manual")}</b><div class="muted">${esc(o.description)}</div><div class="muted">Impact: ${esc(o.expected_impact)} · Rollback: ${esc(o.rollback)}</div></td>
+    <td><span class="pill ${o.risk==="high"?"sev-high":o.risk==="low"?"sev-medium":"sev-low"}">${esc(o.risk)}</span></td>
+    <td>${o.hook_name&&i.phase==="awaiting_approval"?`<button data-act="approve" data-o="${esc(o.option_id)}">Approve</button> <button class="ghost" data-act="reject" data-o="${esc(o.option_id)}">Reject</button>`:""}</td></tr>`).join("");
+  $("#detail").innerHTML=`
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="big">${esc(i.title)}</span>${sev(i.severity)}${ph(i.phase)}<span class="pill sev-low">${esc(i.priority)}</span></div>
+  <div class="muted mono">${esc(i.incident_id)} · ${esc(i.application)} · source ${esc(i.source)}</div>
+  <div class="grid" style="margin-top:14px">
+   <div class="card"><h2 style="margin-top:0">Root cause</h2>${r?`<div class="big">${esc(r.primary.category.replace(/_/g," "))}</div><p>${esc(r.primary.statement)}</p>
+     <div class="bar"><i style="width:${conf}%;background:${r.insufficient_evidence?"var(--warn)":"var(--ok)"}"></i></div><p class="muted">Confidence ${conf}% — ${esc(r.confidence_explanation)}</p>
+     ${r.alternatives.length?`<p class="muted">Alternatives: ${r.alternatives.map(a=>esc(a.category)+" "+Math.round(a.confidence*100)+"%").join(", ")}</p>`:""}
+     ${r.missing_evidence.length?`<p class="sev-medium">Missing evidence: ${r.missing_evidence.map(esc).join("; ")}</p>`:""}
+     ${r.similar_past_incidents.length?`<p class="muted">Similar past: ${r.similar_past_incidents.map(esc).join("; ")}</p>`:""}`:'<p class="muted">Investigation in progress…</p>'}</div>
+   <div class="card"><h2 style="margin-top:0">Agent activity (A2A)</h2><table><tr><th>Specialist</th><th>Mode</th><th>Findings</th><th>ms</th></tr>
+     ${i.a2a_log.map(a=>`<tr><td>${esc(a.to)}</td><td class="muted">${esc(a.mode||a.error||"")}</td><td>${esc(a.findings??"-")}</td><td class="mono">${esc(a.duration_ms??"")}</td></tr>`).join("")}</table>
+     <h2>Findings</h2>${i.findings.map(f=>`<div>• <b>${esc(f.category)}</b> <span class="muted">(${esc(f.agent)}, w=${f.weight})</span> ${esc(f.observation)}</div>`).join("")||'<div class="muted">none</div>'}</div>
+  </div>
+  <div class="card"><h2 style="margin-top:0">Remediation (human approval required)</h2><table>${opts}</table>
+   ${i.approvals.map(a=>`<div class="muted">${esc(a.decided_by)} ${esc(a.decision)} ${esc(a.option_id)} — ${esc(a.reason)}</div>`).join("")}
+   ${i.executions.map(x=>`<div>Executed <b>${esc(x.hook_name)}</b>: ${esc(x.status)} (HTTP ${esc(x.http_status)})</div>`).join("")}
+   ${i.verification?`<div style="margin-top:8px" class="${i.verification.recovered?"ph-resolved":"sev-high"}"><b>Recovery ${i.verification.recovered?"verified":"not verified"}</b> — ${i.verification.checks.map(esc).join(" · ")} ${esc(i.verification.next_step)}</div>`:""}</div>
+  <div class="grid"><div class="card"><h2 style="margin-top:0">Evidence (via MCP)</h2><table><tr><th>Source</th><th>Kind</th><th>Summary</th></tr>
+     ${i.evidence.map(e=>`<tr><td class="mono">${esc(e.source)}</td><td>${esc(e.kind)}</td><td>${esc(e.summary).slice(0,220)}</td></tr>`).join("")}</table></div>
+   <div class="card"><h2 style="margin-top:0">Timeline</h2><div class="tl">${i.timeline.map(t=>`<div><span class="muted mono">${new Date(t.at).toLocaleTimeString()}</span> <b>${esc(t.agent)}</b><br>${esc(t.event)}</div>`).join("")}</div></div></div>
+  ${i.postmortem?`<div class="card"><h2 style="margin-top:0">Postmortem</h2><p>${esc(i.postmortem.summary)}</p><p><b>Root cause:</b> ${esc(i.postmortem.root_cause)}</p>
+    <p><b>Lessons learned:</b></p><ul>${i.postmortem.lessons_learned.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <p><b>Preventive recommendations:</b></p><ul>${i.postmortem.preventive_recommendations.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}`;
+  document.querySelectorAll("[data-act]").forEach(b=>b.onclick=async()=>{
+    const verb=b.dataset.act, reason=prompt(`Reason to ${verb}?`, verb==="approve"?"Evidence reviewed":"");
+    if(reason===null) return; document.querySelectorAll("[data-act]").forEach(x=>x.disabled=true);
+    try{show(await api(`/v1/incidents/${i.incident_id}/remediation/${b.dataset.o}/${verb}`,{method:"POST",body:JSON.stringify({reason})}))}catch(e){alert(e.message)} refresh()});
+}
+function start(){$("#login").hidden=true;$("#app").hidden=false;$("#logout").hidden=false;refresh().catch(()=>{});clearInterval(window._t);window._t=setInterval(()=>refresh().catch(()=>{}),5000)}
+token?start():logout();
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+{
+  "created_at": "2026-11-11T22:11:37.988560+00:00",
+  "evaluation_mode": "local",
+  "total": 12,
+  "passed": 12,
+  "openai_judged": 12,
+  "langfuse_traces_sent": 0,
+  "results": [
+    {
+      "name": "cloud autoscaling failure",
+      "passed": true,
+      "risk_score": 100,
+      "status": "major_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "cloud load balancer unhealthy targets",
+      "passed": true,
+      "risk_score": 56,
+      "status": "investigating",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "data model drift investigation",
+      "passed": true,
+      "risk_score": 78,
+      "status": "degraded",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "data schema compatibility failure",
+      "passed": true,
+      "risk_score": 92,
+      "status": "major_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "it email delivery delay",
+      "passed": true,
+      "risk_score": 70,
+      "status": "degraded",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "it vpn access outage",
+      "passed": true,
+      "risk_score": 90,
+      "status": "major_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "login anomaly account takeover",
+      "passed": true,
+      "risk_score": 100,
+      "verdict": "confirmed_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "checkout api production 503 incident",
+      "passed": true,
+      "risk_score": 100,
+      "status": "major_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "production latency spike after deploy",
+      "passed": true,
+      "risk_score": 100,
+      "status": "major_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "production queue backlog",
+      "passed": true,
+      "risk_score": 79,
+      "status": "degraded",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "security suspicious oauth persistence",
+      "passed": true,
+      "risk_score": 100,
+      "verdict": "confirmed_incident",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    },
+    {
+      "name": "security password spray against many users",
+      "passed": true,
+      "risk_score": 58,
+      "verdict": "suspicious",
+      "openai_judge": {
+        "enabled": true,
+        "model": "gpt-4o-mini",
+        "error": "Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429"
+      },
+      "langfuse_trace_sent": false
+    }
+  ]
+}
